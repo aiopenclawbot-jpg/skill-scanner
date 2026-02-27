@@ -1,0 +1,325 @@
+#!/usr/bin/env node
+/**
+ * Agent Skill Security Scanner
+ * Detects malicious patterns in agent skills
+ */
+
+import fs from 'fs';
+import path from 'path';
+import { parse } from '@babel/parser';
+import traverse from '@babel/traverse';
+
+class SkillScanner {
+  constructor() {
+    this.findings = [];
+    this.safetyScore = 100;
+    this.criticalIssues = 0;
+    this.warningIssues = 0;
+  }
+
+  /**
+   * Scan a skill directory or file
+   */
+  async scanSkill(skillPath) {
+    console.log(`🔍 Scanning: ${skillPath}`);
+    this.findings = [];
+    this.safetyScore = 100;
+    this.criticalIssues = 0;
+    this.warningIssues = 0;
+
+    const stats = fs.statSync(skillPath);
+    
+    if (stats.isDirectory()) {
+      await this.scanDirectory(skillPath);
+    } else {
+      await this.scanFile(skillPath);
+    }
+
+    return this.generateReport();
+  }
+
+  /**
+   * Recursively scan directory
+   */
+  async scanDirectory(dirPath) {
+    const files = fs.readdirSync(dirPath);
+    
+    for (const file of files) {
+      // Skip node_modules and hidden files
+      if (file === 'node_modules' || file.startsWith('.')) continue;
+      
+      const filePath = path.join(dirPath, file);
+      const stats = fs.statSync(filePath);
+      
+      if (stats.isDirectory()) {
+        await this.scanDirectory(filePath);
+      } else if (this.isScannable(file)) {
+        await this.scanFile(filePath);
+      }
+    }
+  }
+
+  /**
+   * Check if file should be scanned
+   */
+  isScannable(filename) {
+    const ext = path.extname(filename);
+    return ['.js', '.ts', '.jsx', '.tsx', '.sh', '.bash', '.py', '.md'].includes(ext);
+  }
+
+  /**
+   * Scan individual file
+   */
+  async scanFile(filePath) {
+    const ext = path.extname(filePath);
+    const content = fs.readFileSync(filePath, 'utf-8');
+
+    // Text-based pattern matching (works for all file types)
+    this.scanPatterns(filePath, content);
+
+    // JavaScript AST analysis
+    if (['.js', '.jsx', '.ts', '.tsx'].includes(ext)) {
+      try {
+        await this.scanJavaScript(filePath, content);
+      } catch (error) {
+        this.addFinding('warning', 'PARSE_ERROR', filePath, `Could not parse: ${error.message}`);
+      }
+    }
+
+    // Shell script analysis
+    if (['.sh', '.bash'].includes(ext)) {
+      this.scanShellScript(filePath, content);
+    }
+  }
+
+  /**
+   * Pattern-based security checks
+   */
+  scanPatterns(filePath, content) {
+    const patterns = [
+      // Critical: Wallet/crypto access
+      {
+        regex: /private[_\s]*key|seed[_\s]*phrase|mnemonic|PRIVATE_KEY/gi,
+        severity: 'critical',
+        code: 'WALLET_ACCESS',
+        message: 'Accesses private keys or seed phrases'
+      },
+      
+      // Critical: Code execution
+      {
+        regex: /eval\s*\(|Function\s*\(|new\s+Function/g,
+        severity: 'critical',
+        code: 'DYNAMIC_EXECUTION',
+        message: 'Uses dynamic code execution (eval/Function)'
+      },
+      
+      // Critical: Obfuscation
+      {
+        regex: /atob\s*\(|String\.fromCharCode|\\x[0-9a-f]{2}/gi,
+        severity: 'critical',
+        code: 'OBFUSCATED_CODE',
+        message: 'Contains obfuscated code (base64/hex encoding)'
+      },
+      
+      // Critical: Clipboard access
+      {
+        regex: /clipboard\.read|clipboard\.write|execCommand\(['"]copy/gi,
+        severity: 'critical',
+        code: 'CLIPBOARD_ACCESS',
+        message: 'Accesses clipboard (potential address hijacking)'
+      },
+      
+      // Warning: Network calls to unknown domains
+      {
+        regex: /https?:\/\/(?![\w.-]*(github|npm|vercel|stripe|openclaw)\.[\w]+)/gi,
+        severity: 'warning',
+        code: 'EXTERNAL_API',
+        message: 'Makes calls to external APIs'
+      },
+      
+      // Warning: File system writes
+      {
+        regex: /fs\.write|fs\.appendFile|fs\.createWriteStream/gi,
+        severity: 'warning',
+        code: 'FILE_WRITE',
+        message: 'Writes to file system'
+      },
+      
+      // Warning: Environment variable access
+      {
+        regex: /process\.env\.|\.env(?!\.example)/g,
+        severity: 'warning',
+        code: 'ENV_ACCESS',
+        message: 'Accesses environment variables'
+      },
+      
+      // Info: Cryptocurrency mentions
+      {
+        regex: /bitcoin|ethereum|crypto|wallet|trade|polymarket|kalshi/gi,
+        severity: 'info',
+        code: 'CRYPTO_RELATED',
+        message: 'Contains cryptocurrency-related functionality'
+      }
+    ];
+
+    patterns.forEach(({ regex, severity, code, message }) => {
+      const matches = content.match(regex);
+      if (matches && matches.length > 0) {
+        this.addFinding(severity, code, filePath, `${message} (${matches.length} occurrence${matches.length > 1 ? 's' : ''})`);
+      }
+    });
+  }
+
+  /**
+   * JavaScript AST-based analysis
+   */
+  async scanJavaScript(filePath, content) {
+    try {
+      const ast = parse(content, {
+        sourceType: 'module',
+        plugins: ['jsx', 'typescript']
+      });
+
+      traverse.default(ast, {
+        // Detect dangerous function calls
+        CallExpression: (path) => {
+          const callee = path.node.callee;
+          
+          // eval() calls
+          if (callee.name === 'eval') {
+            this.addFinding('critical', 'EVAL_CALL', filePath, `eval() call at line ${path.node.loc?.start.line}`);
+          }
+          
+          // exec/spawn without validation
+          if (callee.property && ['exec', 'spawn', 'execSync'].includes(callee.property.name)) {
+            this.addFinding('warning', 'SHELL_EXEC', filePath, `Shell execution at line ${path.node.loc?.start.line}`);
+          }
+        },
+
+        // Detect import of dangerous modules
+        ImportDeclaration: (path) => {
+          const source = path.node.source.value;
+          const dangerousModules = ['child_process', 'vm', 'crypto'];
+          
+          if (dangerousModules.includes(source)) {
+            this.addFinding('warning', 'DANGEROUS_IMPORT', filePath, `Imports ${source}`);
+          }
+        }
+      });
+    } catch (error) {
+      // Parsing errors already handled in scanFile
+    }
+  }
+
+  /**
+   * Shell script analysis
+   */
+  scanShellScript(filePath, content) {
+    const patterns = [
+      { regex: /curl\s+.*\|\s*bash/g, severity: 'critical', code: 'PIPE_TO_BASH', message: 'Pipes curl output to bash (dangerous)' },
+      { regex: /rm\s+-rf\s+[\/~]/g, severity: 'critical', code: 'DANGEROUS_DELETE', message: 'Dangerous recursive delete' },
+      { regex: /chmod\s+777/g, severity: 'warning', code: 'INSECURE_PERMISSIONS', message: 'Sets insecure file permissions' },
+    ];
+
+    patterns.forEach(({ regex, severity, code, message }) => {
+      if (regex.test(content)) {
+        this.addFinding(severity, code, filePath, message);
+      }
+    });
+  }
+
+  /**
+   * Add a security finding
+   */
+  addFinding(severity, code, file, message) {
+    this.findings.push({ severity, code, file, message });
+    
+    // Update scores
+    if (severity === 'critical') {
+      this.criticalIssues++;
+      this.safetyScore -= 20;
+    } else if (severity === 'warning') {
+      this.warningIssues++;
+      this.safetyScore -= 5;
+    }
+    
+    // Cap safety score at 0
+    if (this.safetyScore < 0) this.safetyScore = 0;
+  }
+
+  /**
+   * Generate final report
+   */
+  generateReport() {
+    const rating = this.safetyScore >= 80 ? '✅ SAFE' :
+                   this.safetyScore >= 60 ? '⚠️  CAUTION' :
+                   '🚨 DANGEROUS';
+
+    return {
+      safetyScore: this.safetyScore,
+      rating,
+      criticalIssues: this.criticalIssues,
+      warningIssues: this.warningIssues,
+      totalFindings: this.findings.length,
+      findings: this.findings,
+      summary: this.generateSummary()
+    };
+  }
+
+  /**
+   * Generate human-readable summary
+   */
+  generateSummary() {
+    if (this.criticalIssues === 0 && this.warningIssues === 0) {
+      return '✅ No security issues detected. Skill appears safe.';
+    }
+
+    const parts = [];
+    if (this.criticalIssues > 0) {
+      parts.push(`🚨 ${this.criticalIssues} critical issue${this.criticalIssues > 1 ? 's' : ''}`);
+    }
+    if (this.warningIssues > 0) {
+      parts.push(`⚠️  ${this.warningIssues} warning${this.warningIssues > 1 ? 's' : ''}`);
+    }
+    
+    return parts.join(', ') + '. Review recommended before use.';
+  }
+}
+
+// CLI usage
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const skillPath = process.argv[2] || '.';
+  
+  console.log('🛡️  Agent Skill Security Scanner v1.0\n');
+  
+  const scanner = new SkillScanner();
+  const report = await scanner.scanSkill(skillPath);
+  
+  console.log('\n' + '═'.repeat(60));
+  console.log(`📊 SECURITY REPORT`);
+  console.log('═'.repeat(60));
+  console.log(`Safety Score: ${report.safetyScore}/100 ${report.rating}`);
+  console.log(`Critical Issues: ${report.criticalIssues}`);
+  console.log(`Warnings: ${report.warningIssues}`);
+  console.log(`Total Findings: ${report.totalFindings}`);
+  console.log(`\n${report.summary}\n`);
+  
+  if (report.findings.length > 0) {
+    console.log('═'.repeat(60));
+    console.log('🔍 DETAILED FINDINGS');
+    console.log('═'.repeat(60));
+    
+    report.findings.forEach((finding, i) => {
+      const icon = finding.severity === 'critical' ? '🚨' :
+                   finding.severity === 'warning' ? '⚠️ ' : 'ℹ️ ';
+      console.log(`\n${i + 1}. ${icon} [${finding.code}] ${finding.severity.toUpperCase()}`);
+      console.log(`   File: ${finding.file}`);
+      console.log(`   ${finding.message}`);
+    });
+  }
+  
+  console.log('\n' + '═'.repeat(60));
+  process.exit(report.criticalIssues > 0 ? 1 : 0);
+}
+
+export default SkillScanner;

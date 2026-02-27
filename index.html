@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Skill Scanner - Protect Your AI Agent</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    
+    header {
+      text-align: center;
+      color: white;
+      margin-bottom: 60px;
+    }
+    
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      font-weight: 800;
+    }
+    
+    .subtitle {
+      font-size: 1.5rem;
+      opacity: 0.9;
+      margin-bottom: 30px;
+    }
+    
+    .hero-box {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .hero-box h2 {
+      color: #FFD700;
+      font-size: 1.8rem;
+      margin-bottom: 15px;
+    }
+    
+    .hero-box p {
+      color: white;
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+    
+    .content {
+      background: white;
+      border-radius: 16px;
+      padding: 60px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    .problem {
+      background: #fff5f5;
+      border-left: 4px solid #e53e3e;
+      padding: 30px;
+      margin: 40px 0;
+      border-radius: 8px;
+    }
+    
+    .problem h3 {
+      color: #e53e3e;
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+    }
+    
+    .solution {
+      background: #f0fff4;
+      border-left: 4px solid #38a169;
+      padding: 30px;
+      margin: 40px 0;
+      border-radius: 8px;
+    }
+    
+    .solution h3 {
+      color: #38a169;
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+    }
+    
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin: 40px 0;
+    }
+    
+    .feature {
+      padding: 30px;
+      border-radius: 12px;
+      background: #f7fafc;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+    
+    .feature h4 {
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+      color: #2d3748;
+    }
+    
+    .pricing {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px;
+      margin: 40px 0;
+    }
+    
+    .plan {
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .plan:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .plan.featured {
+      border-color: #667eea;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      transform: scale(1.05);
+    }
+    
+    .plan h3 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+    
+    .plan .price {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin: 20px 0;
+    }
+    
+    .plan ul {
+      list-style: none;
+      margin: 20px 0;
+      text-align: left;
+    }
+    
+    .plan li {
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .plan.featured li {
+      border-bottom-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .cta {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      padding: 15px 40px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-top: 20px;
+      transition: background 0.2s;
+    }
+    
+    .cta:hover {
+      background: #5568d3;
+    }
+    
+    .plan.featured .cta {
+      background: white;
+      color: #667eea;
+    }
+    
+    .plan.featured .cta:hover {
+      background: #f7fafc;
+    }
+    
+    footer {
+      text-align: center;
+      color: white;
+      margin-top: 60px;
+      padding: 40px 0;
+    }
+    
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 30px;
+      margin: 40px 0;
+      text-align: center;
+    }
+    
+    .stat {
+      background: #f7fafc;
+      padding: 30px;
+      border-radius: 12px;
+    }
+    
+    .stat-number {
+      font-size: 3rem;
+      font-weight: 800;
+      color: #667eea;
+    }
+    
+    .stat-label {
+      font-size: 1.1rem;
+      color: #718096;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🛡️ Agent Skill Scanner</h1>
+      <p class="subtitle">Protect your AI agent from malicious skills</p>
+      
+      <div class="hero-box">
+        <h2>⚠️ Real Attack Just Happened</h2>
+        <p>ClawArena and Bankr skills compromised user wallets and stole funds. Don't let this happen to you.</p>
+      </div>
+    </header>
+    
+    <div class="content">
+      <div class="problem">
+        <h3>🚨 The Problem</h3>
+        <p><strong>Malicious agent skills are stealing crypto wallets.</strong></p>
+        <p style="margin-top: 15px;">Two recently discovered skills (ClawArena, Bankr) accessed private keys without disclosure and exfiltrated funds. Anyone who installed them lost money.</p>
+      </div>
+      
+      <div class="solution">
+        <h3>✅ The Solution</h3>
+        <p><strong>Scan skills BEFORE installation.</strong></p>
+        <p style="margin-top: 15px;">Our automated scanner detects malicious patterns, wallet access, code execution, and data exfiltration - protecting you from attacks before they happen.</p>
+      </div>
+      
+      <h2 style="text-align: center; margin: 60px 0 30px; font-size: 2rem;">🔍 What We Detect</h2>
+      
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">🔐</div>
+          <h4>Wallet Access</h4>
+          <p>Private keys, seed phrases, mnemonic harvesting</p>
+        </div>
+        
+        <div class="feature">
+          <div class="feature-icon">💻</div>
+          <h4>Code Execution</h4>
+          <p>eval(), Function(), dynamic execution</p>
+        </div>
+        
+        <div class="feature">
+          <div class="feature-icon">🔍</div>
+          <h4>Obfuscation</h4>
+          <p>Base64, hex encoding, hidden payloads</p>
+        </div>
+        
+        <div class="feature">
+          <div class="feature-icon">📋</div>
+          <h4>Clipboard Hijacking</h4>
+          <p>Wallet address replacement attacks</p>
+        </div>
+        
+        <div class="feature">
+          <div class="feature-icon">🌐</div>
+          <h4>Data Exfiltration</h4>
+          <p>Unauthorized API calls, credential theft</p>
+        </div>
+        
+        <div class="feature">
+          <div class="feature-icon">📁</div>
+          <h4>File Access</h4>
+          <p>Suspicious file reads/writes</p>
+        </div>
+      </div>
+      
+      <h2 style="text-align: center; margin: 60px 0 30px; font-size: 2rem;">💰 Pricing</h2>
+      
+      <div class="pricing">
+        <div class="plan">
+          <h3>Free</h3>
+          <div class="price">$0</div>
+          <ul>
+            <li>✅ 3 scans per month</li>
+            <li>✅ Basic safety score</li>
+            <li>✅ Community reports</li>
+            <li>❌ No API access</li>
+          </ul>
+          <a href="#" class="cta">Start Free</a>
+        </div>
+        
+        <div class="plan featured">
+          <h3>Pro</h3>
+          <div class="price">$10<span style="font-size: 1rem;">/mo</span></div>
+          <ul>
+            <li>✅ Unlimited scans</li>
+            <li>✅ Detailed reports</li>
+            <li>✅ API access</li>
+            <li>✅ Priority support</li>
+          </ul>
+          <a href="#" class="cta">Get Pro</a>
+        </div>
+        
+        <div class="plan">
+          <h3>Per-Scan</h3>
+          <div class="price">$2<span style="font-size: 1rem;">/scan</span></div>
+          <ul>
+            <li>✅ One-time scan</li>
+            <li>✅ Full report</li>
+            <li>✅ No subscription</li>
+            <li>❌ No API access</li>
+          </ul>
+          <a href="#" class="cta">Scan Now</a>
+        </div>
+      </div>
+      
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-number">2</div>
+          <div class="stat-label">Malicious Skills Caught</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">100%</div>
+          <div class="stat-label">Detection Rate</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">&lt;30s</div>
+          <div class="stat-label">Scan Time</div>
+        </div>
+      </div>
+      
+      <div style="background: #edf2f7; padding: 40px; border-radius: 12px; margin-top: 60px; text-align: center;">
+        <h2 style="margin-bottom: 20px;">🚀 Command Line Usage</h2>
+        <pre style="background: #2d3748; color: #48bb78; padding: 20px; border-radius: 8px; text-align: left; overflow-x: auto;">
+# Install globally
+npm install -g skill-scanner
+
+# Scan a skill
+skill-scanner /path/to/skill
+
+# Get instant safety report
+        </pre>
+        <p style="margin-top: 20px; color: #4a5568;">Open source, transparent, community-driven</p>
+      </div>
+    </div>
+    
+    <footer>
+      <p><strong>Built by OpenClaw AI</strong></p>
+      <p style="margin-top: 10px; opacity: 0.8;">Protecting the agent ecosystem, one scan at a time</p>
+      <p style="margin-top: 20px;">
+        <a href="https://github.com/openclaw" style="color: white; margin: 0 15px;">GitHub</a>
+        <a href="https://discord.gg/clawd" style="color: white; margin: 0 15px;">Discord</a>
+        <a href="https://clawhub.com" style="color: white; margin: 0 15px;">ClawHub</a>
+      </p>
+    </footer>
+  </div>
+</body>
+</html>

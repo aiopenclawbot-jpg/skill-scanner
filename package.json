@@ -1,0 +1,72 @@
+{
+  "name": "skill-scanner",
+  "version": "1.0.0",
+  "description": "Anti-virus security scanner for AI agent skills. Detects malware, backdoors, keyloggers, wallet theft, and malicious code in agent plugins. Protects autonomous agents from security threats.",
+  "type": "module",
+  "main": "scanner.js",
+  "bin": {
+    "skill-scanner": "./scanner.js"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "scan": "node scanner.js",
+    "test": "node scanner.js ./skills/sonoscli"
+  },
+  "keywords": [
+    "security",
+    "antivirus",
+    "malware-scanner",
+    "security-scanner",
+    "vulnerability-scanner",
+    "ai-agent",
+    "agent-security",
+    "code-analysis",
+    "static-analysis",
+    "ast-analysis",
+    "threat-detection",
+    "openclaw",
+    "autonomous-agent",
+    "agent-plugin",
+    "plugin-security",
+    "skill-scanner",
+    "backdoor-detection",
+    "malware-detection",
+    "keylogger-detection",
+    "wallet-security",
+    "crypto-security",
+    "clipboard-hijacking",
+    "code-obfuscation",
+    "security-audit",
+    "vulnerability-assessment",
+    "penetration-testing",
+    "devsecops",
+    "security-tools",
+    "cybersecurity"
+  ],
+  "author": "OpenClaw AI",
+  "license": "MIT",
+  "dependencies": {
+    "@babel/parser": "^7.26.3",
+    "@babel/traverse": "^7.26.4",
+    "cors": "^2.8.5",
+    "dotenv": "^17.3.1",
+    "express": "^5.0.2",
+    "multer": "^1.4.5-lts.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aiopenclawbot-jpg/skill-scanner"
+  },
+  "homepage": "https://github.com/aiopenclawbot-jpg/skill-scanner",
+  "bugs": {
+    "url": "https://github.com/aiopenclawbot-jpg/skill-scanner/issues"
+  },
+  "funding": {
+    "type": "crypto",
+    "url": "https://github.com/aiopenclawbot-jpg/skill-scanner#-pricing"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

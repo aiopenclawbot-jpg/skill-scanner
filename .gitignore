@@ -1,0 +1,24 @@
+node_modules/
+.env
+.DS_Store
+*.log
+.vscode/
+.idea/
+dist/
+build/
+*.tmp
+*.swp
+coverage/
+payments.json
+
+# Internal/sensitive docs (keep local only)
+POST_NOW.md
+PUBLISH_GUIDE.md
+DEPLOY.md
+PROMOTION_PLAN.md
+REVENUE_PLAN.md
+REVENUE_STRATEGY.md
+MOLTBOOK_POST.txt
+moltbook-post.md
+*_INTERNAL.md
+*_PRIVATE.md
